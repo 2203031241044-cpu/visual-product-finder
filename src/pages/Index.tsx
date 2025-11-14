@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ImageUploader } from "@/components/ImageUploader";
 import { ProductMatchResult } from "@/components/ProductMatchResult";
+import { CategoryFilter } from "@/components/CategoryFilter";
+import { ProductCard } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Search } from "lucide-react";
+import { Sparkles, Search, Package } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import productsData from "@/data/products.json";
 
 interface Product {
   id: number;
@@ -25,6 +28,17 @@ const Index = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isMatching, setIsMatching] = useState(false);
   const [matchResult, setMatchResult] = useState<MatchResult | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const categories = useMemo(() => {
+    const uniqueCategories = [...new Set(productsData.map(p => p.category))];
+    return uniqueCategories.sort();
+  }, []);
+
+  const filteredProducts = useMemo(() => {
+    if (!selectedCategory) return productsData;
+    return productsData.filter(p => p.category === selectedCategory);
+  }, [selectedCategory]);
 
   const handleImageSelect = (file: File) => {
     setSelectedFile(file);
@@ -151,6 +165,33 @@ const Index = () => {
               </div>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Product Browser Section */}
+      <div className="container mx-auto px-4 py-16 border-t border-border">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 mb-4">
+            <Package className="h-4 w-4 text-accent" />
+            <span className="text-sm font-medium text-accent">Browse Collection</span>
+          </div>
+          <h2 className="text-3xl font-bold mb-4 text-foreground">
+            Explore Products by Category
+          </h2>
+          <p className="text-muted-foreground mb-6">
+            Browse our curated collection of {productsData.length} products across {categories.length} categories
+          </p>
+          <CategoryFilter
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
+          {filteredProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
         </div>
       </div>
 
