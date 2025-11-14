@@ -1,0 +1,4 @@
+project_id = "bcoigwutmjcuauetugcd"
+
+[functions.match-product]
+verify_jwt = false
